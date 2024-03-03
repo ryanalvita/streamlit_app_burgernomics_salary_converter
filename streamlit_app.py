@@ -18,9 +18,9 @@ source_country = st.selectbox(
 )
 
 source_salary = st.number_input(
-    label=f"(Monthly) Salary in {source_country} local currency", 
+    label=f"(Monthly) Salary in {source_country if source_country else ''} local currency", 
     value=None, 
-    placeholder="Input (monthly) salary in local source country currency",
+    placeholder="Input (monthly) salary in source country local currency",
     min_value=0,
 )
 
