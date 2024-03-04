@@ -67,9 +67,7 @@ if (
 
     try:
         exchangerate_api_key = os.environ["exchangerate_api_key"]
-        url = (
-            f"https://v6.exchangerate-api.com/v6/{exchangerate_api_key}/pair/{source_currency_code}/{target_currency_code}",
-        )
+        url = f"https://v6.exchangerate-api.com/v6/{exchangerate_api_key}/pair/{source_currency_code}/{target_currency_code}"
         response = request_conversion_rate(url)
         response.raise_for_status()
         conversion_rate = response.json()["conversion_rate"]
