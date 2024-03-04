@@ -1,11 +1,11 @@
-import streamlit as st
+import os
+
 import polars as pl
-from currency_converter import CurrencyConverter
+import requests
+import streamlit as st
 
 st.header(":hamburger: :orange[Burgernomics] Salary Converter")
 st.write("Streamlit App to convert salary using the Big Mac Index")
-
-c = CurrencyConverter()
 
 big_mac = pl.read_csv("data/big-mac-source-data-v2.csv").filter(
     pl.col("date") == "2023-07-01"
@@ -56,14 +56,19 @@ if (
         0, "currency_code"
     ]
 
-    ppp = (
-        source_local_price
-        * c.convert(1, source_currency_code, target_currency_code)
-        / target_local_price
-    )
-    target_salary = (
-        c.convert(source_salary, source_currency_code, target_currency_code) / ppp
-    )
+    try:
+        exchangerate_api_key = os.environ["exchangerate_api_key"]
+        response = requests.get(
+            f"https://v6.exchangerate-api.com/v6/{exchangerate_api_key}/pair/{source_currency_code}/{target_currency_code}",
+            headers={"Accept": "application/json"},
+        )
+        response.raise_for_status()
+        conversion_rate = response.json()["conversion_rate"]
+    except requests.exceptions.RequestException as e:
+        print(f"Exception on requesting exchange rate api with error: {e}")
+
+    ppp = source_local_price * conversion_rate / target_local_price
+    target_salary = conversion_rate * source_salary / ppp
 
     big_mac_per_salary = int(source_salary / source_local_price) - 1
 
@@ -90,5 +95,5 @@ st.caption(
     "Big Mac price is provided by The Economist and last updated on July 2023. For more information about Big Mac Index: https://www.economist.com/big-mac-index"
 )
 st.caption(
-    "Currency converter is supported by CurrencyConverter: https://pypi.org/project/CurrencyConverter/"
+    "Currency exchange rate is supported by ExchangeRate API: https://www.exchangerate-api.com/"
 )
