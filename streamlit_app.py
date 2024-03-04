@@ -4,6 +4,15 @@ import polars as pl
 import requests
 import streamlit as st
 
+
+@st.cache_data  # 👈 Add the caching decorator
+def request_conversion_rate(url):
+    return requests.get(
+        url,
+        headers={"Accept": "application/json"},
+    )
+
+
 st.header(":hamburger: :orange[Burgernomics] Salary Converter")
 st.write("Streamlit App to convert salary using the Big Mac Index")
 
@@ -58,10 +67,10 @@ if (
 
     try:
         exchangerate_api_key = os.environ["exchangerate_api_key"]
-        response = requests.get(
+        url = (
             f"https://v6.exchangerate-api.com/v6/{exchangerate_api_key}/pair/{source_currency_code}/{target_currency_code}",
-            headers={"Accept": "application/json"},
         )
+        response = request_conversion_rate(url)
         response.raise_for_status()
         conversion_rate = response.json()["conversion_rate"]
     except requests.exceptions.RequestException as e:
